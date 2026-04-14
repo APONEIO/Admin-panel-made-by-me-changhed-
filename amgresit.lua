@@ -68,21 +68,7 @@ Tab:CreateToggle({
     Flag = "NoclipToggle",
     Callback = function(Value)
         NoclipEnabled = Value
-        if Value then
-            for _, part in pairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-            print("Noclip ENABLED")
-        else
-            for _, part in pairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
-            end
-            print("Noclip DISABLED")
-        end
+        print("Noclip (Self): " .. (Value and "ENABLED" or "DISABLED"))
     end,
 })
 
@@ -110,14 +96,7 @@ Tab:CreateButton({
     Callback = function()
         if SelectedPlayer then
             PlayerNoclips[SelectedPlayer.Name] = true
-            if SelectedPlayer.Character then
-                for _, part in pairs(SelectedPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-            print("Noclip added to " .. SelectedPlayer.Name)
+            print("Noclip ENABLED for " .. SelectedPlayer.Name)
         else
             print("No player selected!")
         end
@@ -130,41 +109,57 @@ Tab:CreateButton({
     Callback = function()
         if SelectedPlayer then
             PlayerNoclips[SelectedPlayer.Name] = false
-            if SelectedPlayer.Character then
-                for _, part in pairs(SelectedPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-            end
-            print("Noclip removed from " .. SelectedPlayer.Name)
+            print("Noclip DISABLED for " .. SelectedPlayer.Name)
         else
             print("No player selected!")
         end
     end,
 })
 
--- Continuous Noclip Check for all players
+-- Main Loop for Noclip and Speed
 spawn(function()
     while true do
-        wait(0.1)
+        wait(0.05)
         
-        -- Self noclip
+        -- Self Noclip
         if NoclipEnabled and Character then
             for _, part in pairs(Character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     part.CanCollide = false
                 end
             end
+        else
+            for _, part in pairs(Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
         end
         
-        -- Other players noclip
+        -- Apply Speed
+        Humanoid.WalkSpeed = SpeedValue
+        
+        -- Other Players Noclip (Phase through by moving them)
         for playerName, enabled in pairs(PlayerNoclips) do
             local player = Players:FindFirstChild(playerName)
-            if player and player.Character and enabled then
-                for _, part in pairs(player.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
+            if player and player.Character then
+                local playerChar = player.Character
+                local playerHumanoid = playerChar:FindFirstChild("Humanoid")
+                local playerRoot = playerChar:FindFirstChild("HumanoidRootPart")
+                
+                if enabled and playerRoot then
+                    -- Disable collisions
+                    for _, part in pairs(playerChar:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                elseif not enabled and playerRoot then
+                    -- Enable collisions
+                    for _, part in pairs(playerChar:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = true
+                        end
                     end
                 end
             end
