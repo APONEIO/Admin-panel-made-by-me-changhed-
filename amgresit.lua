@@ -36,7 +36,7 @@ local NoclipEnabled = false
 -- Speed Slider
 Tab:CreateSlider({
     Name = "Speed of the light DO NOT ABUSE",
-    Range = {16, 1500},
+    Range = {16, 500},
     Increment = 1,
     Suffix = " Studs/s",
     CurrentValue = 30,
