@@ -33,6 +33,7 @@ local Tab = Window:CreateTab("Player Settings", 0)
 local SpeedValue = 30
 local NoclipEnabled = false
 local SelectedPlayer = nil
+local PlayerNoclips = {}
 
 -- Get all players function
 local function GetPlayerList()
@@ -95,10 +96,10 @@ Tab:CreateDropdown({
     Callback = function(Option)
         if Option[1] ~= "None" then
             SelectedPlayer = Players:FindFirstChild(Option[1])
-            print("Selected Player: " .. Option[1])
+            print("Selected Player: " .. (SelectedPlayer and SelectedPlayer.Name or "Not found"))
         else
             SelectedPlayer = nil
-            print("No player select")
+            print("No player selected")
         end
     end,
 })
@@ -107,44 +108,64 @@ Tab:CreateDropdown({
 Tab:CreateButton({
     Name = "Add Noclip to Selected Player",
     Callback = function()
-        if SelectedPlayer and SelectedPlayer.Character then
-            for _, part in pairs(SelectedPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
+        if SelectedPlayer then
+            PlayerNoclips[SelectedPlayer.Name] = true
+            if SelectedPlayer.Character then
+                for _, part in pairs(SelectedPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
                 end
             end
-            print("Noclip gifted to " .. SelectedPlayer.Name)
+            print("Noclip added to " .. SelectedPlayer.Name)
         else
-            print("No player existwnial selected or player has no character!")
+            print("No player selected!")
         end
     end,
 })
 
 -- Remove Noclip from Player Button
 Tab:CreateButton({
-    Name = "Remove Noclip bcz you are sigma",
+    Name = "Remove Noclip from Selected Player",
     Callback = function()
-        if SelectedPlayer and SelectedPlayer.Character then
-            for _, part in pairs(SelectedPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
+        if SelectedPlayer then
+            PlayerNoclips[SelectedPlayer.Name] = false
+            if SelectedPlayer.Character then
+                for _, part in pairs(SelectedPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
                 end
             end
-            print("Noclip n  more 1 from " .. SelectedPlayer.Name)
+            print("Noclip removed from " .. SelectedPlayer.Name)
         else
-            print("erroare de no existone playre!")
+            print("No player selected!")
         end
     end,
 })
 
--- Continuous Self Noclip Check
+-- Continuous Noclip Check for all players
 spawn(function()
     while true do
         wait(0.1)
+        
+        -- Self noclip
         if NoclipEnabled and Character then
             for _, part in pairs(Character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     part.CanCollide = false
+                end
+            end
+        end
+        
+        -- Other players noclip
+        for playerName, enabled in pairs(PlayerNoclips) do
+            local player = Players:FindFirstChild(playerName)
+            if player and player.Character and enabled then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
                 end
             end
         end
