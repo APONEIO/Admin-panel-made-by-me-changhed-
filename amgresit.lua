@@ -32,6 +32,18 @@ local Tab = Window:CreateTab("Player Settings", 0)
 -- Variables
 local SpeedValue = 30
 local NoclipEnabled = false
+local SelectedPlayer = nil
+
+-- Get all players function
+local function GetPlayerList()
+    local playerList = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerList, player.Name)
+        end
+    end
+    return playerList
+end
 
 -- Speed Slider
 Tab:CreateSlider({
@@ -48,9 +60,9 @@ Tab:CreateSlider({
     end,
 })
 
--- Noclip Toggle
+-- Self Noclip Toggle
 Tab:CreateToggle({
-    Name = "Noclip",
+    Name = "Noclip (Self)",
     CurrentValue = false,
     Flag = "NoclipToggle",
     Callback = function(Value)
@@ -73,7 +85,59 @@ Tab:CreateToggle({
     end,
 })
 
--- Continuous Noclip Check
+-- Select Player Dropdown
+Tab:CreateDropdown({
+    Name = "Select Player",
+    Options = GetPlayerList(),
+    CurrentOption = {"None"},
+    MultipleOptions = false,
+    Flag = "PlayerDropdown",
+    Callback = function(Option)
+        if Option[1] ~= "None" then
+            SelectedPlayer = Players:FindFirstChild(Option[1])
+            print("Selected Player: " .. Option[1])
+        else
+            SelectedPlayer = nil
+            print("No player select")
+        end
+    end,
+})
+
+-- Add Noclip to Player Button
+Tab:CreateButton({
+    Name = "Add Noclip to Selected Player",
+    Callback = function()
+        if SelectedPlayer and SelectedPlayer.Character then
+            for _, part in pairs(SelectedPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+            print("Noclip gifted to " .. SelectedPlayer.Name)
+        else
+            print("No player existwnial selected or player has no character!")
+        end
+    end,
+})
+
+-- Remove Noclip from Player Button
+Tab:CreateButton({
+    Name = "Remove Noclip bcz you are sigma",
+    Callback = function()
+        if SelectedPlayer and SelectedPlayer.Character then
+            for _, part in pairs(SelectedPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+            print("Noclip n  more 1 from " .. SelectedPlayer.Name)
+        else
+            print("erroare de no existone playre!")
+        end
+    end,
+})
+
+-- Continuous Self Noclip Check
 spawn(function()
     while true do
         wait(0.1)
