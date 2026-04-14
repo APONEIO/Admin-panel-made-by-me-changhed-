@@ -29,6 +29,7 @@ local Tab = Window:CreateTab("Player Settings", 0)
 -- Variables
 local SpeedValue = 30
 local NoclipEnabled = false
+local GodModeEnabled = false
 
 -- Function to setup character
 local function setupCharacter(Character)
@@ -61,13 +62,14 @@ local function setupCharacter(Character)
         end,
     })
     
-    -- Admin Panel Buttons
-    Tab:CreateButton({
+    -- God Mode Toggle
+    Tab:CreateToggle({
         Name = "God Mode",
-        Callback = function()
-            Humanoid.MaxHealth = math.huge
-            Humanoid.Health = math.huge
-            print("God Mode ACTIVATED!")
+        CurrentValue = false,
+        Flag = "GodModeToggle",
+        Callback = function(Value)
+            GodModeEnabled = Value
+            print("God Mode: " .. (Value and "ENABLED" or "DISABLED"))
         end,
     })
     
@@ -114,10 +116,17 @@ local function setupCharacter(Character)
         end,
     })
     
-    -- Continuous Noclip and Speed Check
+    -- Continuous Loop for Noclip, Speed, and God Mode
     spawn(function()
         while Character.Parent do
-            wait(0.1)
+            wait(0.05)
+            
+            -- God Mode (Continuous)
+            if GodModeEnabled and Humanoid and Humanoid.Health > 0 then
+                Humanoid.Health = Humanoid.MaxHealth
+            end
+            
+            -- Noclip
             if NoclipEnabled and Character then
                 for _, part in pairs(Character:GetDescendants()) do
                     if part:IsA("BasePart") then
@@ -146,7 +155,7 @@ local InfoTab = Window:CreateTab("Info", 1)
 InfoTab:CreateLabel("Admin Panel Features:")
 InfoTab:CreateLabel("✓ Speed Control")
 InfoTab:CreateLabel("✓ Noclip Toggle")
-InfoTab:CreateLabel("✓ God Mode")
+InfoTab:CreateLabel("✓ God Mode Toggle")
 InfoTab:CreateLabel("✓ Infinite Jump")
 InfoTab:CreateLabel("✓ Heal Button")
 InfoTab:CreateLabel("✓ Teleport")
